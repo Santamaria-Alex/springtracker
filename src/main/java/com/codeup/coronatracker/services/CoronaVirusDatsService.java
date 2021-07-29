@@ -22,6 +22,10 @@ public class CoronaVirusDatsService {
 
     private List<LocationStats> allStats = new ArrayList<>();
 
+    public List<LocationStats> getAllStats() {
+        return allStats;
+    }
+
     //post construct - tells spring to execute the service (coronaVirusDataService) and once its executed, run this method (fetchVirusData)
     @PostConstruct
     @Scheduled(cron = "* * 1 * * * ")//this makes it so the method (fetchVirusData) runs the first hour of every day -- sec min hour day week month.
@@ -42,11 +46,16 @@ public class CoronaVirusDatsService {
         for (
                 CSVRecord record : records) {
             LocationStats locationStat = new LocationStats();
+            locationStat.setCity(record.get("Admin2"));
             locationStat.setState(record.get("Province_State"));
             locationStat.setCountry(record.get("Country_Region"));
-            locationStat.setLatestTotalCases(Integer.parseInt(record.get(record.size() - 1)));
-            System.out.println(locationStat);
+            int latestCases = Integer.parseInt(record.get(record.size() - 1));
+            int prevDayCases = Integer.parseInt(record.get(record.size() - 2));
+            locationStat.setLatestTotalCases(latestCases);
+            locationStat.setDiffFromPrevDay(latestCases - prevDayCases);
             newStats.add(locationStat);
+
+            //UID, iso2, iso3, code3, FIPS, Admin2, Province_State, Country_Region, Lat, Long_, Combined_Key,
 
         }
         this.allStats = newStats;
